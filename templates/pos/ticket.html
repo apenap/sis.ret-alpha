@@ -1,0 +1,50 @@
+<div class="ticket">
+    <div class="center">
+        <h4>Tienda de Abarrotes</h4>
+        <p>📍 Dirección: Calle Principal #123</p>
+        <p>📞 Teléfono: 555-123-4567</p>
+        <hr>
+        <p><strong>Ticket de Venta:</strong> {{ venta.folio }}</p>
+        <p><strong>Fecha:</strong> {{ venta.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}</p>
+        {% if venta.cliente %}
+        <p><strong>Cliente:</strong> {{ venta.cliente.nombre }} {{ venta.cliente.apellido }}</p>
+        {% endif %}
+        <hr>
+    </div>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Cant</th>
+                <th>Precio</th>
+                <th>Total</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for detalle in venta.detalles %}
+            <tr>
+                <td>{{ detalle.producto.nombre }}</td>
+                <td class="center">{{ detalle.cantidad }}</td>
+                <td class="right">${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                <td class="right">${{ "%.2f"|format(detalle.subtotal) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    
+    <hr>
+    
+    <div class="right">
+        <p><strong>Subtotal: ${{ "%.2f"|format(venta.total) }}</strong></p>
+        <p>Efectivo: ${{ "%.2f"|format(venta.efectivo) }}</p>
+        <p>Cambio: ${{ "%.2f"|format(venta.cambio) }}</p>
+    </div>
+    
+    <hr>
+    
+    <div class="center">
+        <p>¡Gracias por su compra!</p>
+        <p>Vuelva pronto</p>
+    </div>
+</div>

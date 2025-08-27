@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Configuración General - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-3">
+        <div class="list-group">
+            <a href="{{ url_for('configuracion_general') }}" class="list-group-item list-group-item-action active">
+                <i class="bi bi-gear"></i> General
+            </a>
+            <a href="{{ url_for('configuracion_facturacion') }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-receipt"></i> Facturación
+            </a>
+            <a href="{{ url_for('configuracion_apariencia') }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-palette"></i> Apariencia
+            </a>
+            <a href="{{ url_for('configuracion_usuarios') }}" class="list-group-item list-group-item-action">
+                <i class="bi bi-people"></i> Usuarios
+            </a>
+        </div>
+    </div>
+    
+    <div class="col-md-9">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-gear"></i> Configuración General del Sistema
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="nombre_tienda" class="form-label">Nombre de la Tienda</label>
+                            <input type="text" class="form-control" id="nombre_tienda" name="nombre_tienda" 
+                                   value="{{ configuracion.nombre_tienda or '' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="rfc_tienda" class="form-label">RFC de la Tienda</label>
+                            <input type="text" class="form-control" id="rfc_tienda" name="rfc_tienda" 
+                                   value="{{ configuracion.rfc_tienda or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="telefono_tienda" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono_tienda" name="telefono_tienda" 
+                                   value="{{ configuracion.telefono_tienda or '' }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email_tienda" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email_tienda" name="email_tienda" 
+                                   value="{{ configuracion.email_tienda or '' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="direccion_tienda" class="form-label">Dirección</label>
+                        <textarea class="form-control" id="direccion_tienda" name="direccion_tienda" 
+                                  rows="3">{{ configuracion.direccion_tienda or '' }}</textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="moneda" class="form-label">Moneda Principal</label>
+                            <select class="form-select" id="moneda" name="moneda">
+                                <option value="MXN" {% if configuracion.moneda == 'MXN' %}selected{% endif %}>Peso Mexicano (MXN)</option>
+                                <option value="USD" {% if configuracion.moneda == 'USD' %}selected{% endif %}>Dólar Americano (USD)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="formato_fecha" class="form-label">Formato de Fecha</label>
+                            <select class="form-select" id="formato_fecha" name="formato_fecha">
+                                <option value="dd/mm/yyyy" {% if configuracion.formato_fecha == 'dd/mm/yyyy' %}selected{% endif %}>DD/MM/AAAA</option>
+                                <option value="mm/dd/yyyy" {% if configuracion.formato_fecha == 'mm/dd/yyyy' %}selected{% endif %}>MM/DD/AAAA</option>
+                                <option value="yyyy-mm-dd" {% if configuracion.formato_fecha == 'yyyy-mm-dd' %}selected{% endif %}>AAAA-MM-DD</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="zona_horaria" class="form-label">Zona Horaria</label>
+                            <select class="form-select" id="zona_horaria" name="zona_horaria">
+                                <option value="America/Mexico_City" {% if configuracion.zona_horaria == 'America/Mexico_City' %}selected{% endif %}>Centro de México</option>
+                                <option value="America/New_York" {% if configuracion.zona_horaria == 'America/New_York' %}selected{% endif %}>Este de EE. UU.</option>
+                                <option value="UTC" {% if configuracion.zona_horaria == 'UTC' %}selected{% endif %}>UTC</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar Configuración
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

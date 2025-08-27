@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Proveedor - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="bi bi-pencil"></i> Editar Proveedor
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('editar_proveedor', id=proveedor.id) }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre del Proveedor *</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   value="{{ proveedor.nombre }}" required maxlength="100">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="contacto" class="form-label">Persona de Contacto</label>
+                            <input type="text" class="form-control" id="contacto" name="contacto" 
+                                   value="{{ proveedor.contacto or '' }}" maxlength="100">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                   value="{{ proveedor.telefono or '' }}" maxlength="20">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ proveedor.email or '' }}" maxlength="100">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <textarea class="form-control" id="direccion" name="direccion" 
+                                  rows="3">{{ proveedor.direccion or '' }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('lista_proveedores') }}" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-circle"></i> Actualizar Proveedor
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {% if proveedor.productos %}
+        <div class="card mt-3">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-cart"></i> Productos de este Proveedor
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>Producto</th>
+                                <th>Precio</th>
+                                <th>Stock</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for producto in proveedor.productos %}
+                            <tr>
+                                <td>{{ producto.nombre }}</td>
+                                <td>${{ "%.2f"|format(producto.precio_venta) }}</td>
+                                <td>
+                                    <span class="badge {% if producto.stock <= producto.stock_minimo %}bg-warning{% else %}bg-success{% endif %}">
+                                        {{ producto.stock }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

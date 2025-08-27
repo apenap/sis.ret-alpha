@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+
+{% block title %}Importar Productos - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-info text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-cloud-upload"></i> Importar Productos desde CSV
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="archivo" class="form-label">Seleccionar archivo CSV</label>
+                        <input class="form-control" type="file" id="archivo" name="archivo" accept=".csv" required>
+                        <div class="form-text">Solo se aceptan archivos en formato CSV</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('lista_productos') }}" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-info text-white">
+                            <i class="bi bi-cloud-upload"></i> Importar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-warning text-dark">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Instrucciones de Importación - Productos
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Formato del archivo CSV:</h6>
+                <p>El archivo debe contener las siguientes columnas (en el mismo orden):</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Columna</th>
+                                <th>Requerido</th>
+                                <th>Descripción</th>
+                                <th>Ejemplo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>codigo</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Código interno del producto</td>
+                                <td>PROD-001</td>
+                            </tr>
+                            <tr>
+                                <td>codigo_barras</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Código de barras del producto</td>
+                                <td>7501000000001</td>
+                            </tr>
+                            <tr>
+                                <td>nombre</td>
+                                <td><span class="badge bg-success">Sí</span></td>
+                                <td>Nombre del producto</td>
+                                <td>Arroz Integral 1kg</td>
+                            </tr>
+                            <tr>
+                                <td>descripcion</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Descripción del producto</td>
+                                <td>Arroz de grano largo</td>
+                            </tr>
+                            <tr>
+                                <td>precio_compra</td>
+                                <td><span class="badge bg-success">Sí</span></td>
+                                <td>Precio de compra</td>
+                                <td>15.50</td>
+                            </tr>
+                            <tr>
+                                <td>precio_venta</td>
+                                <td><span class="badge bg-success">Sí</span></td>
+                                <td>Precio de venta</td>
+                                <td>20.00</td>
+                            </tr>
+                            <tr>
+                                <td>stock</td>
+                                <td><span class="badge bg-success">Sí</span></td>
+                                <td>Cantidad en inventario</td>
+                                <td>100</td>
+                            </tr>
+                            <tr>
+                                <td>stock_minimo</td>
+                                <td><span class="badge bg-success">Sí</span></td>
+                                <td>Stock mínimo para alertas</td>
+                                <td>10</td>
+                            </tr>
+                            <tr>
+                                <td>categoria</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Categoría del producto</td>
+                                <td>Abarrotes</td>
+                            </tr>
+                            <tr>
+                                <td>proveedor_id</td>
+                                <td><span class="badge bg-success">Sí</span></td>
+                                <td>ID del proveedor</td>
+                                <td>1</td>
+                            </tr>
+                            <tr>
+                                <td>activo</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Estado del producto (True/False)</td>
+                                <td>True</td>
+                            </tr>
+                            <tr class="table-info">
+                                <td colspan="4" class="text-center"><strong>Campos Fiscales (CFDI 4.0)</strong></td>
+                            </tr>
+                            <tr>
+                                <td>clave_producto_sat</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Clave del producto según el SAT</td>
+                                <td>01010101</td>
+                            </tr>
+                            <tr>
+                                <td>unidad_medida_sat</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Unidad de medida (SAT)</td>
+                                <td>H87</td>
+                            </tr>
+                            <tr>
+                                <td>clave_unidad_sat</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Clave de unidad (SAT)</td>
+                                <td>E48</td>
+                            </tr>
+                            <tr>
+                                <td>objeto_impuesto_sat</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Objeto de impuesto (01/02)</td>
+                                <td>02</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="bi bi-exclamation-triangle"></i> Notas importantes:</h6>
+                    <ul class="mb-0">
+                        <li>La primera línea debe contener los nombres de las columnas</li>
+                        <li>Los productos duplicados (mismo código, código de barras o nombre) serán ignorados</li>
+                        <li>El proveedor_id debe existir en la base de datos</li>
+                        <li>El archivo debe estar codificado en UTF-8 para caracteres especiales</li>
+                        <li>Los valores booleanos (activo) deben ser True/False</li>
+                        <li>Los campos fiscales son necesarios para la facturación electrónica</li>
+                    </ul>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('descargar_ejemplo_productos') }}" class="btn btn-outline-info">
+                        <i class="bi bi-download"></i> Descargar archivo de ejemplo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

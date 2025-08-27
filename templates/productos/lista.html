@@ -1,0 +1,174 @@
+{% extends "base.html" %}
+
+{% block title %}Productos - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-cart"></i> Gestión de Productos
+    </h2>
+    <a href="{{ url_for('nuevo_producto') }}" class="btn btn-success">
+        <i class="bi bi-plus-circle"></i> Nuevo Producto
+    </a>
+</div>
+
+<div class="card mb-3">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Filtros</h5>
+    </div>
+    <div class="card-body">
+        <form method="GET" class="row g-2">
+            <div class="col-md-4">
+                <select name="categoria" class="form-select" onchange="this.form.submit()">
+                    <option value="all" {% if categoria_seleccionada == 'all' %}selected{% endif %}>Todas las categorías</option>
+                    {% for categoria in categorias %}
+                    <option value="{{ categoria }}" {% if categoria_seleccionada == categoria %}selected{% endif %}>{{ categoria }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <select name="stock" class="form-select" onchange="this.form.submit()">
+                    <option value="all" {% if stock_seleccionado == 'all' %}selected{% endif %}>Todo el stock</option>
+                    <option value="bajo" {% if stock_seleccionado == 'bajo' %}selected{% endif %}>Stock bajo</option>
+                    <option value="sin" {% if stock_seleccionado == 'sin' %}selected{% endif %}>Sin stock</option>
+                </select>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('lista_productos') }}" class="btn btn-outline-secondary w-100">
+                    <i class="bi bi-arrow-clockwise"></i> Limpiar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-cart"></i> Gestión de Productos
+    </h2>
+    <div>
+        <a href="{{ url_for('importar_productos') }}" class="btn btn-info me-2">
+            <i class="bi bi-cloud-upload"></i> Importar
+        </a>
+        <a href="{{ url_for('nuevo_producto') }}" class="btn btn-success">
+            <i class="bi bi-plus-circle"></i> Nuevo Producto
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header bg-light">
+        <h5 class="mb-0">Inventario de Productos</h5>
+    </div>
+    <div class="card-body">
+        {% if productos %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Código</th>
+                        <th>Producto</th>
+                        <th>Categoría</th>
+                        <th>Precio Compra</th>
+                        <th>Precio Venta</th>
+                        <th>Stock</th>
+                        <th>Proveedor</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for producto in productos %}
+                    <tr class="{% if producto.stock == 0 %}table-danger{% elif producto.necesita_reabastecimiento() %}table-warning{% endif %}">
+                        <td>{{ producto.codigo or 'N/A' }}</td>
+                        <td>
+                            <strong>{{ producto.nombre }}</strong>
+                            {% if producto.descripcion %}
+                            <br>
+                            <small class="text-muted">{{ producto.descripcion[:50] }}...</small>
+                            {% endif %}
+                        </td>
+                        <td>{{ producto.categoria or 'General' }}</td>
+                        <td>${{ "%.2f"|format(producto.precio_compra) }}</td>
+                        <td>
+                            <strong>${{ "%.2f"|format(producto.precio_venta) }}</strong>
+                        </td>
+                        <td>
+                            <span class="badge {% if producto.stock == 0 %}bg-danger{% elif producto.necesita_reabastecimiento() %}bg-warning{% else %}bg-success{% endif %}">
+                                {{ producto.stock }}
+                            </span>
+                            {% if producto.stock_minimo %}
+                            <small class="text-muted d-block">Mín: {{ producto.stock_minimo }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <small>{{ producto.proveedor_rel.nombre }}</small>
+                        </td>
+                        <td>
+                            {% if producto.activo %}
+                            <span class="badge bg-success">Activo</span>
+                            {% else %}
+                            <span class="badge bg-secondary">Inactivo</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('editar_producto', id=producto.id) }}" 
+                                   class="btn btn-warning btn-sm" 
+                                   data-bs-toggle="tooltip" 
+                                   title="Editar producto">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{{ url_for('eliminar_producto', id=producto.id) }}" 
+                                   class="btn btn-danger btn-sm btn-delete" 
+                                   data-bs-toggle="tooltip" 
+                                   title="Eliminar producto"
+                                   onclick="return confirm('¿Estás seguro de eliminar {{ producto.nombre }}?')">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-12">
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle"></i>
+                    <strong>Alertas de Stock:</strong>
+                    <span class="badge bg-danger">Rojo = Sin stock</span>
+                    <span class="badge bg-warning ms-2">Amarillo = Stock bajo</span>
+                    <span class="badge bg-success ms-2">Verde = Stock suficiente</span>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-cart display-1 text-muted"></i>
+            <h4 class="text-muted mt-3">No hay productos en el inventario</h4>
+            <p class="text-muted">Comienza agregando tu primer producto</p>
+            <a href="{{ url_for('nuevo_producto') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Agregar Primer Producto
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            <h6><i class="bi bi-info-circle"></i> Gestión de Inventario</h6>
+            <ul class="mb-0">
+                <li>Mantén actualizados los precios de compra y venta</li>
+                <li>Establece un stock mínimo para recibir alertas</li>
+                <li>Revisa regularmente los productos con stock bajo</li>
+                <li>Actualiza los precios según cambios con proveedores</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

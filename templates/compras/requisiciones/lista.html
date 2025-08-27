@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Requisiciones de Compra - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        <i class="bi bi-cart-check"></i> Requisiciones de Compra
+    </h2>
+    <div>
+        <div class="btn-group">
+            <a href="{{ url_for('lista_requisiciones') }}?estado=todos" 
+               class="btn btn-outline-primary {% if estado_seleccionado == 'todos' %}active{% endif %}">
+                Todos
+            </a>
+            <a href="{{ url_for('lista_requisiciones') }}?estado=pendientes" 
+               class="btn btn-outline-warning {% if estado_seleccionado == 'pendientes' %}active{% endif %}">
+                Pendientes
+            </a>
+            <a href="{{ url_for('lista_requisiciones') }}?estado=aprobadas" 
+               class="btn btn-outline-success {% if estado_seleccionado == 'aprobadas' %}active{% endif %}">
+                Aprobadas
+            </a>
+            <a href="{{ url_for('lista_requisiciones') }}?estado=rechazadas" 
+               class="btn btn-outline-danger {% if estado_seleccionado == 'rechazadas' %}active{% endif %}">
+                Rechazadas
+            </a>
+        </div>
+        <a href="{{ url_for('nueva_requisicion') }}" class="btn btn-primary ms-2">
+            <i class="bi bi-plus-circle"></i> Nueva Requisición
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if requisiciones %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Folio</th>
+                        <th>Fecha</th>
+                        <th>Solicitante</th>
+                        <th>Departamento</th>
+                        <th>Total Estimado</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for requisicion in requisiciones %}
+                    <tr>
+                        <td>{{ requisicion.folio }}</td>
+                        <td>{{ requisicion.fecha_creacion.strftime('%d/%m/%Y') }}</td>
+                        <td>{{ requisicion.solicitante }}</td>
+                        <td>{{ requisicion.departamento }}</td>
+                        <td>${{ "%.2f"|format(requisicion.total_estimado) }}</td>
+                        <td>
+                            <span class="badge 
+                                {% if requisicion.estado == 'pendiente' %}bg-warning
+                                {% elif requisicion.estado == 'aprobada' %}bg-success
+                                {% else %}bg-danger{% endif %}">
+                                {{ requisicion.estado|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="{{ url_for('detalle_requisicion', id=requisicion.id) }}" 
+                                   class="btn btn-info btn-sm" title="Ver detalles">
+                                    <i class="bi bi-eye"></i>
+                                </a>
+                                {% if requisicion.estado == 'aprobada' %}
+                                <a href="{{ url_for('convertir_requisicion_cotizacion', id=requisicion.id) }}" 
+                                   class="btn btn-success btn-sm" title="Convertir a cotización">
+                                    <i class="bi bi-arrow-right-circle"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-inboxes display-1 text-muted"></i>
+            <h4 class="text-muted mt-3">No hay requisiciones registradas</h4>
+            <p class="text-muted">Comienza creando tu primera requisición de compra</p>
+            <a href="{{ url_for('nueva_requisicion') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Crear Primera Requisición
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

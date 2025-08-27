@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Factura - {{ venta.folio }}{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Factura CFDI 4.0</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <h5>Emisor</h5>
+                            <p><strong>Razón Social:</strong> Mi Tienda de Abarrotes SA de CV<br>
+                            <strong>RFC:</strong> ABC123456789<br>
+                            <strong>Regimen Fiscal:</strong> General de Ley Personas Morales</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Receptor</h5>
+                            <p><strong>Nombre:</strong> {{ venta.cliente.nombre }} {{ venta.cliente.apellido }}<br>
+                            <strong>RFC:</strong> {{ venta.cliente.rfc or 'No especificado' }}<br>
+                            <strong>Uso CFDI:</strong> {{ venta.cliente.uso_cfdi or 'G03' }}</p>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio</th>
+                                    <th>Subtotal</th>
+                                    <th>IVA</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for detalle in venta.detalles %}
+                                <tr>
+                                    <td>{{ detalle.producto.nombre }}</td>
+                                    <td>{{ detalle.cantidad }}</td>
+                                    <td>${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                                    <td>${{ "%.2f"|format(detalle.subtotal) }}</td>
+                                    <td>${{ "%.2f"|format(detalle.subtotal * 0.16) }}</td>
+                                    <td>${{ "%.2f"|format(detalle.subtotal * 1.16) }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <td colspan="4"></td>
+                                    <td><strong>Subtotal:</strong></td>
+                                    <td>${{ "%.2f"|format(venta.total) }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4"></td>
+                                    <td><strong>IVA (16%):</strong></td>
+                                    <td>${{ "%.2f"|format(venta.total * 0.16) }}</td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4"></td>
+                                    <td><strong>Total:</strong></td>
+                                    <td>${{ "%.2f"|format(venta.total * 1.16) }}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <img src="{{ qr_url }}" alt="Código QR CFDI" class="img-fluid" style="max-width: 200px;">
+                        <p class="mt-2">Código QR para verificación</p>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-center mt-4">
+                        <a href="{{ url_for('descargar_factura', venta_id=venta.id) }}" class="btn btn-primary me-md-2">
+                            <i class="bi bi-download"></i> Descargar XML
+                        </a>
+                        <a href="{{ url_for('imprimir_ticket', venta_id=venta.id) }}" class="btn btn-secondary">
+                            <i class="bi bi-printer"></i> Imprimir
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

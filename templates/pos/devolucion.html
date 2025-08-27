@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+
+{% block title %}Devolución - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="bi bi-arrow-return-left"></i> Procesar Devolución
+                </h4>
+            </div>
+            <div class="card-body">
+                <!-- Búsqueda de venta -->
+                <div class="mb-4">
+                    <label class="form-label">Buscar venta por folio</label>
+                    <div class="input-group">
+                        <input type="text" id="folio-venta" class="form-control" 
+                               placeholder="Folio de venta" value="{{ venta.folio if venta else '' }}">
+                        <button class="btn btn-primary" onclick="buscarVenta()">
+                            <i class="bi bi-search"></i> Buscar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Resultados de búsqueda -->
+                <div id="resultado-venta" class="mb-4">
+                    {% if venta %}
+                    <div class="card">
+                        <div class="card-header">
+                            Venta: {{ venta.folio }} - {{ venta.fecha_creacion.strftime('%d/%m/%Y %H:%M') }}
+                        </div>
+                        <div class="card-body">
+                            <table class="table table-sm">
+                                <thead>
+                                    <tr>
+                                        <th>Producto</th>
+                                        <th>Cantidad</th>
+                                        <th>Precio</th>
+                                        <th>Subtotal</th>
+                                        <th>Devolver</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for detalle in venta.detalles %}
+                                    <tr>
+                                        <td>{{ detalle.producto.nombre }}</td>
+                                        <td>{{ detalle.cantidad }}</td>
+                                        <td>${{ "%.2f"|format(detalle.precio_unitario) }}</td>
+                                        <td>${{ "%.2f"|format(detalle.subtotal) }}</td>
+                                        <td>
+                                            <input type="number" class="form-control form-control-sm" 
+                                                   id="cantidad-{{ detalle.id }}" 
+                                                   min="0" max="{{ detalle.cantidad }}" 
+                                                   value="0" style="width: 70px;">
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            
+                            <div class="mb-3">
+                                <label class="form-label">Motivo de devolución</label>
+                                <textarea class="form-control" id="motivo-devolucion" rows="2"></textarea>
+                            </div>
+                            
+                            <button class="btn btn-warning" onclick="procesarDevolucion({{ venta.id }})">
+                                <i class="bi bi-arrow-return-left"></i> Procesar Devolución
+                            </button>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function buscarVenta() {
+    const folio = document.getElementById('folio-venta').value;
+    if (!folio) return;
+    
+    fetch('/pos/buscar-venta', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `folio=${encodeURIComponent(folio)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultado = document.getElementById('resultado-venta');
+        
+        if (data.success) {
+            let html = `
+                <div class="card">
+                    <div class="card-header">
+                        Venta: ${data.venta.folio} - ${data.venta.fecha}
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Cantidad</th>
+                                    <th>Precio</th>
+                                    <th>Subtotal</th>
+                                    <th>Devolver</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
+            
+            data.venta.detalles.forEach(detalle => {
+                html += `
+                    <tr>
+                        <td>${detalle.producto_nombre}</td>
+                        <td>${detalle.cantidad}</td>
+                        <td>$${detalle.precio_unitario.toFixed(2)}</td>
+                        <td>$${detalle.subtotal.toFixed(2)}</td>
+                        <td>
+                            <input type="number" class="form-control form-control-sm" 
+                                   id="cantidad-${detalle.id}" 
+                                   min="0" max="${detalle.cantidad}" 
+                                   value="0" style="width: 70px;">
+                        </td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                            </tbody>
+                        </table>
+                        
+                        <div class="mb-3">
+                            <label class="form-label">Motivo de devolución</label>
+                            <textarea class="form-control" id="motivo-devolucion" rows="2"></textarea>
+                        </div>
+                        
+                        <button class="btn btn-warning" onclick="procesarDevolucion(${data.venta.id})">
+                            <i class="bi bi-arrow-return-left"></i> Procesar Devolución
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            resultado.innerHTML = html;
+        } else {
+            resultado.innerHTML = `
+                <div class="alert alert-danger">
+                    ${data.message}
+                </div>
+            `;
+        }
+    });
+}
+
+function procesarDevolucion(ventaId) {
+    const motivo = document.getElementById('motivo-devolucion').value;
+    const detalles = [];
+    
+    // Recopilar detalles de devolución
+    data.venta.detalles.forEach(detalle => {
+        const cantidadInput = document.getElementById(`cantidad-${detalle.id}`);
+        const cantidad = parseInt(cantidadInput.value) || 0;
+        
+        if (cantidad > 0) {
+            detalles.push({
+                producto_id: detalle.producto_id,
+                cantidad: cantidad,
+                precio_unitario: detalle.precio_unitario
+            });
+        }
+    });
+    
+    if (detalles.length === 0) {
+        alert('Seleccione al menos un producto para devolver');
+        return;
+    }
+    
+    fetch('/pos/devolucion', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            venta_id: ventaId,
+            motivo: motivo,
+            detalles: detalles
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Devolución procesada correctamente');
+            window.location.reload();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+</script>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}Editar Cliente - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-warning text-dark">
+                <h4 class="mb-0">
+                    <i class="bi bi-pencil"></i> Editar Cliente
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('editar_cliente', id=cliente.id) }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre *</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   value="{{ cliente.nombre }}" required maxlength="100">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="apellido" class="form-label">Apellido</label>
+                            <input type="text" class="form-control" id="apellido" name="apellido" 
+                                   value="{{ cliente.apellido or '' }}" maxlength="100">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                   value="{{ cliente.telefono or '' }}" maxlength="20">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{{ cliente.email or '' }}" maxlength="100">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <textarea class="form-control" id="direccion" name="direccion" 
+                                  rows="3">{{ cliente.direccion or '' }}</textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="tipo_cliente" class="form-label">Tipo de Cliente *</label>
+                        <select class="form-select" id="tipo_cliente" name="tipo_cliente" required>
+                            <option value="mostrador" {% if cliente.tipo_cliente == 'mostrador' %}selected{% endif %}>Cliente de Mostrador</option>
+                            <option value="registrado" {% if cliente.tipo_cliente == 'registrado' %}selected{% endif %}>Cliente Registrado</option>
+                        </select>
+                    </div>
+
+<!-- Sección de datos fiscales -->
+<div class="card mt-4">
+    <div class="card-header bg-info text-white">
+        <h5 class="mb-0">Datos Fiscales (CFDI 4.0)</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="razon_social" class="form-label">Razón Social</label>
+                <input type="text" class="form-control" id="razon_social" name="razon_social" 
+                       value="{{ cliente.razon_social if cliente else '' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="rfc" class="form-label">RFC</label>
+                <input type="text" class="form-control" id="rfc" name="rfc" 
+                       value="{{ cliente.rfc if cliente else '' }}" maxlength="13">
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="regimen_fiscal" class="form-label">Régimen Fiscal</label>
+                <select class="form-select" id="regimen_fiscal" name="regimen_fiscal">
+                    <option value="">Seleccionar régimen...</option>
+                    <option value="601" {% if cliente and cliente.regimen_fiscal == '601' %}selected{% endif %}>General de Ley Personas Morales</option>
+                    <option value="603" {% if cliente and cliente.regimen_fiscal == '603' %}selected{% endif %}>Personas Morales con Fines no Lucrativos</option>
+                    <option value="605" {% if cliente and cliente.regimen_fiscal == '605' %}selected{% endif %}>Sueldos y Salarios e Ingresos Asimilados a Salarios</option>
+                    <option value="606" {% if cliente and cliente.regimen_fiscal == '606' %}selected{% endif %}>Arrendamiento</option>
+                    <option value="607" {% if cliente and cliente.regimen_fiscal == '607' %}selected{% endif %}>Régimen de Enajenación o Adquisición de Bienes</option>
+                    <option value="608" {% if cliente and cliente.regimen_fiscal == '608' %}selected{% endif %}>Demás ingresos</option>
+                    <option value="610" {% if cliente and cliente.regimen_fiscal == '610' %}selected{% endif %}>Residentes en el Extranjero sin Establecimiento Permanente en México</option>
+                    <option value="611" {% if cliente and cliente.regimen_fiscal == '611' %}selected{% endif %}>Ingresos por Dividendos (socios y accionistas)</option>
+                    <option value="612" {% if cliente and cliente.regimen_fiscal == '612' %}selected{% endif %}>Personas Físicas con Actividades Empresariales y Profesionales</option>
+                    <option value="614" {% if cliente and cliente.regimen_fiscal == '614' %}selected{% endif %}>Ingresos por intereses</option>
+                    <option value="615" {% if cliente and cliente.regimen_fiscal == '615' %}selected{% endif %}>Régimen de los ingresos por obtención de premios</option>
+                    <option value="616" {% if cliente and cliente.regimen_fiscal == '616' %}selected{% endif %}>Sin obligaciones fiscales</option>
+                    <option value="620" {% if cliente and cliente.regimen_fiscal == '620' %}selected{% endif %}>Sociedades Cooperativas de Producción que optan por diferir sus ingresos</option>
+                    <option value="621" {% if cliente and cliente.regimen_fiscal == '621' %}selected{% endif %}>Incorporación Fiscal</option>
+                    <option value="622" {% if cliente and cliente.regimen_fiscal == '622' %}selected{% endif %}>Actividades Agrícolas, Ganaderas, Silvícolas y Pesqueras</option>
+                    <option value="623" {% if cliente and cliente.regimen_fiscal == '623' %}selected{% endif %}>Opcional para Grupos de Sociedades</option>
+                    <option value="624" {% if cliente and cliente.regimen_fiscal == '624' %}selected{% endif %}>Coordinados</option>
+                    <option value="625" {% if cliente and cliente.regimen_fiscal == '625' %}selected{% endif %}>Régimen de las Actividades Empresariales con ingresos a través de Plataformas Tecnológicas</option>
+                    <option value="626" {% if cliente and cliente.regimen_fiscal == '626' %}selected{% endif %}>Régimen Simplificado de Confianza</option>
+                </select>
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="codigo_postal" class="form-label">Código Postal</label>
+                <input type="text" class="form-control" id="codigo_postal" name="codigo_postal" 
+                       value="{{ cliente.codigo_postal if cliente else '' }}" maxlength="5">
+            </div>
+        </div>
+
+        <div class="mb-3">
+            <label for="uso_cfdi" class="form-label">Uso del CFDI</label>
+            <select class="form-select" id="uso_cfdi" name="uso_cfdi">
+                <option value="">Seleccionar uso...</option>
+                <option value="G01" {% if cliente and cliente.uso_cfdi == 'G01' %}selected{% endif %}>Adquisición de mercancías</option>
+                <option value="G02" {% if cliente and cliente.uso_cfdi == 'G02' %}selected{% endif %}>Devoluciones, descuentos o bonificaciones</option>
+                <option value="G03" {% if cliente and cliente.uso_cfdi == 'G03' %}selected{% endif %}>Gastos en general</option>
+                <option value="I01" {% if cliente and cliente.uso_cfdi == 'I01' %}selected{% endif %}>Construcciones</option>
+                <option value="I02" {% if cliente and cliente.uso_cfdi == 'I02' %}selected{% endif %}>Mobiliario y equipo de oficina por inversiones</option>
+                <option value="I03" {% if cliente and cliente.uso_cfdi == 'I03' %}selected{% endif %}>Equipo de transporte</option>
+                <option value="I04" {% if cliente and cliente.uso_cfdi == 'I04' %}selected{% endif %}>Equipo de cómputo y accesorios</option>
+                <option value="I05" {% if cliente and cliente.uso_cfdi == 'I05' %}selected{% endif %}>Dados, troqueles, moldes, matrices y herramental</option>
+                <option value="I06" {% if cliente and cliente.uso_cfdi == 'I06' %}selected{% endif %}>Comunicaciones telefónicas</option>
+                <option value="I07" {% if cliente and cliente.uso_cfdi == 'I07' %}selected{% endif %}>Comunicaciones satelitales</option>
+                <option value="I08" {% if cliente and cliente.uso_cfdi == 'I08' %}selected{% endif %}>Otra maquinaria y equipo</option>
+                <option value="D01" {% if cliente and cliente.uso_cfdi == 'D01' %}selected{% endif %}>Honorarios médicos, dentales y gastos hospitalarios</option>
+                <option value="D02" {% if cliente and cliente.uso_cfdi == 'D02' %}selected{% endif %}>Gastos médicos por incapacidad o discapacidad</option>
+                <option value="D03" {% if cliente and cliente.uso_cfdi == 'D03' %}selected{% endif %}>Gastos funerales</option>
+                <option value="D04" {% if cliente and cliente.uso_cfdi == 'D04' %}selected{% endif %}>Donativos</option>
+                <option value="D05" {% if cliente and cliente.uso_cfdi == 'D05' %}selected{% endif %}>Intereses reales efectivamente pagados por créditos hipotecarios</option>
+                <option value="D06" {% if cliente and cliente.uso_cfdi == 'D06' %}selected{% endif %}>Aportaciones voluntarias al SAR</option>
+                <option value="D07" {% if cliente and cliente.uso_cfdi == 'D07' %}selected{% endif %}>Primas por seguros de gastos médicos</option>
+                <option value="D08" {% if cliente and cliente.uso_cfdi == 'D08' %}selected{% endif %}>Gastos de transportación escolar obligatoria</option>
+                <option value="D09" {% if cliente and cliente.uso_cfdi == 'D09' %}selected{% endif %}>Depósitos en cuentas para el ahorro, seguros de pensiones</option>
+                <option value="D10" {% if cliente and cliente.uso_cfdi == 'D10' %}selected{% endif %}>Pagos por servicios educativos (colegiaturas)</option>
+                <option value="S01" {% if cliente and cliente.uso_cfdi == 'S01' %}selected{% endif %}>Sin efectos fiscales</option>
+            </select>
+        </div>
+    </div>
+</div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('lista_clientes') }}" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-warning">
+                            <i class="bi bi-check-circle"></i> Actualizar Cliente
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-3">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Información del Registro</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <strong>Fecha de Registro:</strong> {{ cliente.fecha_registro.strftime('%d/%m/%Y %H:%M') }}
+                    </div>
+                    <div class="col-md-6">
+                        <strong>ID del Cliente:</strong> {{ cliente.id }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

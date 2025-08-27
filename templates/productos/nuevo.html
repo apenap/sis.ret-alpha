@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+
+{% block title %}{% if producto %}Editar{% else %}Nuevo{% endif %} Producto - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header {% if producto %}bg-warning text-dark{% else %}bg-info text-white{% endif %}">
+                <h4 class="mb-0">
+                    <i class="bi {% if producto %}bi-pencil{% else %}bi-cart-plus{% endif %}"></i> 
+                    {% if producto %}Editar{% else %}Nuevo{% endif %} Producto
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="codigo" class="form-label">Código Interno</label>
+                            <input type="text" class="form-control" id="codigo" name="codigo" 
+                                   value="{{ producto.codigo if producto else '' }}" 
+                                   placeholder="Código único del producto">
+                            <div class="form-text">Código interno para identificar el producto</div>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="codigo_barras" class="form-label">Código de Barras</label>
+                            <input type="text" class="form-control" id="codigo_barras" name="codigo_barras" 
+                                   value="{{ producto.codigo_barras if producto else '' }}" 
+                                   placeholder="Código de barras del producto">
+                            <div class="form-text">Código de barras para escanear</div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-8 mb-3">
+                            <label for="nombre" class="form-label">Nombre del Producto *</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   value="{{ producto.nombre if producto else '' }}" required 
+                                   placeholder="Nombre del producto">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="categoria" class="form-label">Categoría</label>
+                            <input type="text" class="form-control" id="categoria" name="categoria" 
+                                   value="{{ producto.categoria if producto else '' }}" 
+                                   placeholder="Categoría del producto">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="descripcion" class="form-label">Descripción</label>
+                        <textarea class="form-control" id="descripcion" name="descripcion" 
+                                  rows="2" placeholder="Descripción del producto">{{ producto.descripcion if producto else '' }}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="precio_compra" class="form-label">Precio de Compra *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="precio_compra" name="precio_compra" 
+                                       step="0.01" min="0" required 
+                                       value="{{ producto.precio_compra if producto else '' }}" 
+                                       placeholder="0.00">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="precio_venta" class="form-label">Precio de Venta *</label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" class="form-control" id="precio_venta" name="precio_venta" 
+                                       step="0.01" min="0" required 
+                                       value="{{ producto.precio_venta if producto else '' }}" 
+                                       placeholder="0.00">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="proveedor_id" class="form-label">Proveedor *</label>
+                            <select class="form-select" id="proveedor_id" name="proveedor_id" required>
+                                <option value="">Seleccionar proveedor...</option>
+                                {% for proveedor in proveedores %}
+                                <option value="{{ proveedor.id }}" {% if producto and producto.proveedor_id == proveedor.id %}selected{% endif %}>
+                                    {{ proveedor.nombre }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="stock" class="form-label">Stock Inicial *</label>
+                            <input type="number" class="form-control" id="stock" name="stock" 
+                                   min="0" required value="{{ producto.stock if producto else 0 }}">
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="stock_minimo" class="form-label">Stock Mínimo *</label>
+                            <input type="number" class="form-control" id="stock_minimo" name="stock_minimo" 
+                                   min="0" required value="{{ producto.stock_minimo if producto else 5 }}">
+                            <div class="form-text">Se alertará cuando el stock llegue a este nivel</div>
+                        </div>
+                        
+                        <div class="col-md-4 mb-3">
+                            <label for="activo" class="form-label">Estado</label>
+                            <select class="form-select" id="activo" name="activo">
+                                <option value="true" {% if not producto or producto.activo %}selected{% endif %}>Activo</option>
+                                <option value="false" {% if producto and not producto.activo %}selected{% endif %}>Inactivo</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Sección de Campos Fiscales -->
+                    <div class="card mt-4">
+                        <div class="card-header bg-info text-white">
+                            <h5 class="mb-0">Datos Fiscales (Para facturación CFDI 4.0)</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="clave_producto_sat" class="form-label">Clave Producto/Servicio (SAT)</label>
+                                    <input type="text" class="form-control" id="clave_producto_sat" name="clave_producto_sat" 
+                                           value="{{ producto.clave_producto_sat if producto else '' }}" 
+                                           placeholder="Ej: 01010101">
+                                    <div class="form-text">Clave del catálogo del SAT</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="unidad_medida_sat" class="form-label">Unidad de Medida (SAT)</label>
+                                    <input type="text" class="form-control" id="unidad_medida_sat" name="unidad_medida_sat" 
+                                           value="{{ producto.unidad_medida_sat if producto else 'H87' }}" 
+                                           placeholder="Ej: H87">
+                                    <div class="form-text">H87 = Pieza, etc.</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="clave_unidad_sat" class="form-label">Clave Unidad (SAT)</label>
+                                    <input type="text" class="form-control" id="clave_unidad_sat" name="clave_unidad_sat" 
+                                           value="{{ producto.clave_unidad_sat if producto else 'E48' }}" 
+                                           placeholder="Ej: E48">
+                                    <div class="form-text">E48 = Servicio, etc.</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="objeto_impuesto_sat" class="form-label">Objeto de Impuesto</label>
+                                    <select class="form-select" id="objeto_impuesto_sat" name="objeto_impuesto_sat">
+                                        <option value="01" {% if producto and producto.objeto_impuesto_sat == '01' %}selected{% endif %}>01 - No causa impuesto</option>
+                                        <option value="02" {% if not producto or producto.objeto_impuesto_sat == '02' %}selected{% endif %}>02 - Sí causa impuesto</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                        <a href="{{ url_for('lista_productos') }}" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn {% if producto %}btn-warning{% else %}btn-info text-white{% endif %}">
+                            <i class="bi bi-check-circle"></i> {% if producto %}Actualizar{% else %}Guardar{% endif %} Producto
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

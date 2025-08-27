@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Importar Clientes - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card">
+            <div class="card-header bg-success text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-cloud-upload"></i> Importar Clientes desde CSV
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-4">
+                        <label for="archivo" class="form-label">Seleccionar archivo CSV</label>
+                        <input class="form-control" type="file" id="archivo" name="archivo" accept=".csv" required>
+                        <div class="form-text">Solo se aceptan archivos en formato CSV</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('lista_clientes') }}" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="bi bi-cloud-upload"></i> Importar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">
+                    <i class="bi bi-info-circle"></i> Instrucciones de Importación - Clientes
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>Formato del archivo CSV:</h6>
+                <p>El archivo debe contener las siguientes columnas (en el mismo orden):</p>
+                
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Columna</th>
+                                <th>Requerido</th>
+                                <th>Descripción</th>
+                                <th>Ejemplo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>nombre</td>
+                                <td><span class="badge bg-success">Sí</span></td>
+                                <td>Nombre del cliente</td>
+                                <td>María</td>
+                            </tr>
+                            <tr>
+                                <td>apellido</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Apellido del cliente</td>
+                                <td>González</td>
+                            </tr>
+                            <tr>
+                                <td>telefono</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Teléfono de contacto</td>
+                                <td>555-123-4567</td>
+                            </tr>
+                            <tr>
+                                <td>email</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Correo electrónico</td>
+                                <td>cliente@email.com</td>
+                            </tr>
+                            <tr>
+                                <td>direccion</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Dirección completa</td>
+                                <td>Calle Falsa 123, Ciudad</td>
+                            </tr>
+                            <tr>
+                                <td>tipo_cliente</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Tipo de cliente (mostrador/registrado)</td>
+                                <td>registrado</td>
+                            </tr>
+                            <tr class="table-info">
+                                <td colspan="4" class="text-center"><strong>Campos Fiscales (CFDI 4.0)</strong></td>
+                            </tr>
+                            <tr>
+                                <td>razon_social</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Razón social fiscal</td>
+                                <td>María González Martínez</td>
+                            </tr>
+                            <tr>
+                                <td>rfc</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>RFC del cliente</td>
+                                <td>GOMM800101ABC</td>
+                            </tr>
+                            <tr>
+                                <td>regimen_fiscal</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Régimen fiscal (601, 603, etc.)</td>
+                                <td>603</td>
+                            </tr>
+                            <tr>
+                                <td>codigo_postal</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Código postal fiscal</td>
+                                <td>01000</td>
+                            </tr>
+                            <tr>
+                                <td>calle</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Calle fiscal</td>
+                                <td>Av. Reforma</td>
+                            </tr>
+                            <tr>
+                                <td>numero_exterior</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Número exterior fiscal</td>
+                                <td>456</td>
+                            </tr>
+                            <tr>
+                                <td>numero_interior</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Número interior fiscal</td>
+                                <td>B</td>
+                            </tr>
+                            <tr>
+                                <td>colonia</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Colonia fiscal</td>
+                                <td>Juárez</td>
+                            </tr>
+                            <tr>
+                                <td>municipio</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Municipio/Alcaldía fiscal</td>
+                                <td>Benito Juárez</td>
+                            </tr>
+                            <tr>
+                                <td>estado</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Estado fiscal</td>
+                                <td>Ciudad de México</td>
+                            </tr>
+                            <tr>
+                                <td>pais</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>País fiscal</td>
+                                <td>México</td>
+                            </tr>
+                            <tr>
+                                <td>uso_cfdi</td>
+                                <td><span class="badge bg-secondary">No</span></td>
+                                <td>Uso de CFDI (G01, G02, G03, etc.)</td>
+                                <td>G03</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <h6><i class="bi bi-exclamation-triangle"></i> Notas importantes:</h6>
+                    <ul class="mb-0">
+                        <li>La primera línea debe contener los nombres de las columnas</li>
+                        <li>Los clientes duplicados (mismo email, teléfono o RFC) serán ignorados</li>
+                        <li>El archivo debe estar codificado en UTF-8 para caracteres especiales</li>
+                        <li>Si no se especifica, el tipo de cliente será "mostrador" por defecto</li>
+                        <li>Los campos fiscales son necesarios para generar facturas electrónicas</li>
+                    </ul>
+                </div>
+                
+                <div class="text-center mt-3">
+                    <a href="{{ url_for('descargar_ejemplo_clientes') }}" class="btn btn-outline-success">
+                        <i class="bi bi-download"></i> Descargar archivo de ejemplo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

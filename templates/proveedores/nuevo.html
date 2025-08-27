@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% block title %}Nuevo Proveedor - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h4 class="mb-0">
+                    <i class="bi bi-plus-circle"></i> Nuevo Proveedor
+                </h4>
+            </div>
+            <div class="card-body">
+                <form method="POST" action="{{ url_for('nuevo_proveedor') }}">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nombre" class="form-label">Nombre del Proveedor *</label>
+                            <input type="text" class="form-control" id="nombre" name="nombre" 
+                                   required maxlength="100" placeholder="Ej: Distribuidora México">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="contacto" class="form-label">Persona de Contacto</label>
+                            <input type="text" class="form-control" id="contacto" name="contacto" 
+                                   maxlength="100" placeholder="Ej: Juan Pérez">
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefono" class="form-label">Teléfono</label>
+                            <input type="tel" class="form-control" id="telefono" name="telefono" 
+                                   maxlength="20" placeholder="Ej: 555-123-4567">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   maxlength="100" placeholder="Ej: contacto@proveedor.com">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="direccion" class="form-label">Dirección</label>
+                        <textarea class="form-control" id="direccion" name="direccion" 
+                                  rows="3" placeholder="Dirección completa del proveedor"></textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{{ url_for('lista_proveedores') }}" class="btn btn-secondary me-md-2">
+                            <i class="bi bi-arrow-left"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-circle"></i> Guardar Proveedor
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert alert-info mt-3">
+            <h6><i class="bi bi-lightbulb"></i> Recomendaciones</h6>
+            <ul class="mb-0">
+                <li>Mantén la información de contacto actualizada</li>
+                <li>Verifica que el nombre del proveedor sea único</li>
+                <li>Incluye todos los datos necesarios para una comunicación eficiente</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

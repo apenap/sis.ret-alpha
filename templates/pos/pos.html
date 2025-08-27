@@ -1,0 +1,582 @@
+{% extends "base.html" %}
+
+{% block title %}Punto de Venta - Gestión Tienda{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <!-- Panel de búsqueda y productos -->
+        <div class="col-md-4 border-end bg-light">
+            <div class="sticky-top pt-3" style="z-index: 1000;">
+                <h4 class="mb-4">
+                    <i class="bi bi-cash-coin"></i> Punto de Venta
+                </h4>
+                
+                <!-- Búsqueda por código de barras -->
+                <div class="mb-3">
+                    <label class="form-label">Buscar por código de barras</label>
+                    <div class="input-group">
+                        <input type="text" id="codigo-barras" class="form-control" 
+                               placeholder="Escanear código..." autofocus>
+                        <button class="btn btn-primary" onclick="buscarPorCodigo()">
+                            <i class="bi bi-upc-scan"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Resultado de búsqueda -->
+                <div id="resultado-busqueda" class="mb-3"></div>
+                
+                <!-- Lista de productos frecuentes -->
+                <h5 class="mt-4">Productos frecuentes</h5>
+                <div class="row row-cols-2 g-2" id="productos-frecuentes">
+                    {% for producto in productos[:8] %}
+                    <div class="col">
+                        <div class="card h-100 producto-card" 
+                             onclick="agregarAlCarrito({{ producto.id }})"
+                             style="cursor: pointer;">
+                            {% if producto.imagen_url %}
+                            <img src="{{ producto.imagen_url }}" class="card-img-top" 
+                                 alt="{{ producto.nombre }}" style="height: 80px; object-fit: cover;">
+                            {% else %}
+                            <div class="card-img-top bg-secondary d-flex align-items-center justify-content-center" 
+                                 style="height: 80px;">
+                                <i class="bi bi-image text-white"></i>
+                            </div>
+                            {% endif %}
+                            <div class="card-body p-2">
+                                <h6 class="card-title mb-0">{{ producto.nombre }}</h6>
+                                <p class="card-text mb-0">${{ "%.2f"|format(producto.precio_venta) }}</p>
+                                <small class="text-muted">Stock: {{ producto.stock }}</small>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel del carrito -->
+        <div class="col-md-4 border-end">
+            <div class="pt-3">
+                <h4>Carrito de compras</h4>
+                
+                <div id="carrito-vacio" class="text-center py-5 {% if session.carrito %}d-none{% endif %}">
+                    <i class="bi bi-cart display-1 text-muted"></i>
+                    <p class="text-muted">El carrito está vacío</p>
+                </div>
+                
+                <div id="carrito-items" class="{% if not session.carrito %}d-none{% endif %}">
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Producto</th>
+                                    <th>Precio</th>
+                                    <th>Cantidad</th>
+                                    <th>Subtotal</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-carrito">
+                                {% for item in session.carrito %}
+                                <tr>
+                                    <td>{{ item.nombre }}</td>
+                                    <td>${{ "%.2f"|format(item.precio) }}</td>
+                                    <td>
+                                        <div class="input-group input-group-sm" style="width: 90px;">
+                                            <button class="btn btn-outline-secondary" 
+                                                    onclick="cambiarCantidad({{ loop.index0 }}, -1)">-</button>
+                                            <input type="number" class="form-control text-center" 
+                                                   value="{{ item.cantidad }}" 
+                                                   onchange="actualizarCantidad({{ loop.index0 }}, this.value)">
+                                            <button class="btn btn-outline-secondary" 
+                                                    onclick="cambiarCantidad({{ loop.index0 }}, 1)">+</button>
+                                        </div>
+                                    </td>
+                                    <td>${{ "%.2f"|format(item.subtotal) }}</td>
+                                    <td>
+                                        <button class="btn btn-danger btn-sm" 
+                                                onclick="eliminarItem({{ loop.index0 }})">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="card mt-3">
+                        <div class="card-body">
+                            <h5 class="card-title">Total: $<span id="total-carrito">0.00</span></h5>
+                            
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-danger" onclick="limpiarCarrito()">
+                                    <i class="bi bi-x-circle"></i> Limpiar carrito
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Panel de pago -->
+        <div class="col-md-4">
+            <div class="pt-3">
+                <h4>Procesar pago</h4>
+                
+                <!-- Selección de cliente -->
+                <div class="mb-3">
+                    <label class="form-label">Cliente</label>
+                    <select class="form-select" id="cliente-select">
+                        <option value="">Cliente mostrador</option>
+                        {% for cliente in clientes %}
+                        <option value="{{ cliente.id }}">{{ cliente.nombre }} {{ cliente.apellido }}</option>
+                        {% endfor %}
+                    </select>
+                    <button class="btn btn-sm btn-outline-primary mt-1" data-bs-toggle="modal" data-bs-target="#nuevoClienteModal">
+                        <i class="bi bi-plus"></i> Nuevo cliente
+                    </button>
+                </div>
+                
+                <!-- Método de pago -->
+                <div class="mb-3">
+                    <label class="form-label">Efectivo recibido</label>
+                    <div class="input-group">
+                        <span class="input-group-text">$</span>
+                        <input type="number" class="form-control" id="efectivo-recibido" 
+                               step="0.01" min="0" value="0">
+                    </div>
+                </div>
+                
+                <!-- Resumen de pago -->
+                <div class="card mb-3">
+                    <div class="card-body">
+                        <h6>Resumen de pago</h6>
+                        <table class="table table-sm">
+                            <tr>
+                                <td>Subtotal:</td>
+                                <td class="text-end">$<span id="subtotal-pago">0.00</span></td>
+                            </tr>
+                            <tr>
+                                <td>Total:</td>
+                                <td class="text-end">$<span id="total-pago">0.00</span></td>
+                            </tr>
+                            <tr>
+                                <td>Efectivo:</td>
+                                <td class="text-end">$<span id="efectivo-pago">0.00</span></td>
+                            </tr>
+                            <tr class="table-primary">
+                                <td><strong>Cambio:</strong></td>
+                                <td class="text-end"><strong>$<span id="cambio-pago">0.00</span></strong></td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <!-- Botones de acción -->
+                <div class="d-grid gap-2">
+                    <button class="btn btn-success btn-lg" onclick="procesarVenta()">
+                        <i class="bi bi-credit-card"></i> Cobrar
+                    </button>
+                    <a href="{{ url_for('devolucion_venta') }}" class="btn btn-warning">
+                        <i class="bi bi-arrow-return-left"></i> Devolución
+                    </a>
+                </div>
+                
+                <!-- Resumen del día -->
+                <div class="card mt-4">
+                    <div class="card-header">
+                        Resumen del día
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-1">Ventas: <strong>{{ resumen.total_ventas or 0 }}</strong></p>
+                        <p class="mb-0">Total: <strong>${{ "%.2f"|format(resumen.total_ingresos or 0) }}</strong></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para nuevo cliente -->
+<div class="modal fade" id="nuevoClienteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Nuevo cliente</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="form-nuevo-cliente">
+                    <div class="mb-3">
+                        <label class="form-label">Nombre *</label>
+                        <input type="text" class="form-control" name="nombre" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Teléfono</label>
+                        <input type="tel" class="form-control" name="telefono">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" name="email">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-primary" onclick="crearCliente()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de ticket -->
+<div class="modal fade" id="ticketModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ticket de venta</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="ticket-content">
+                <!-- Contenido del ticket -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+                <button type="button" class="btn btn-primary" onclick="imprimirTicket()">
+                    <i class="bi bi-printer"></i> Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Variables globales
+let carrito = {{ session.get('carrito', []) | tojson }};
+
+// Actualizar la vista del carrito
+function actualizarVistaCarrito() {
+    const carritoItems = document.getElementById('carrito-items');
+    const carritoVacio = document.getElementById('carrito-vacio');
+    const tablaCarrito = document.getElementById('tabla-carrito');
+    const totalCarrito = document.getElementById('total-carrito');
+    const subtotalPago = document.getElementById('subtotal-pago');
+    const totalPago = document.getElementById('total-pago');
+    
+    if (carrito.length === 0) {
+        carritoItems.classList.add('d-none');
+        carritoVacio.classList.remove('d-none');
+        totalCarrito.textContent = '0.00';
+        subtotalPago.textContent = '0.00';
+        totalPago.textContent = '0.00';
+        actualizarCambio();
+        return;
+    }
+    
+    carritoVacio.classList.add('d-none');
+    carritoItems.classList.remove('d-none');
+    
+    // Actualizar tabla
+    tablaCarrito.innerHTML = '';
+    let total = 0;
+    
+    carrito.forEach((item, index) => {
+        total += item.subtotal;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${item.nombre}</td>
+            <td>$${item.precio.toFixed(2)}</td>
+            <td>
+                <div class="input-group input-group-sm" style="width: 90px;">
+                    <button class="btn btn-outline-secondary" onclick="cambiarCantidad(${index}, -1)">-</button>
+                    <input type="number" class="form-control text-center" value="${item.cantidad}" 
+                           onchange="actualizarCantidad(${index}, this.value)">
+                    <button class="btn btn-outline-secondary" onclick="cambiarCantidad(${index}, 1)">+</button>
+                </div>
+            </td>
+            <td>$${item.subtotal.toFixed(2)}</td>
+            <td>
+                <button class="btn btn-danger btn-sm" onclick="eliminarItem(${index})">
+                    <i class="bi bi-trash"></i>
+                </button>
+            </td>
+        `;
+        tablaCarrito.appendChild(row);
+    });
+    
+    totalCarrito.textContent = total.toFixed(2);
+    subtotalPago.textContent = total.toFixed(2);
+    totalPago.textContent = total.toFixed(2);
+    actualizarCambio();
+}
+
+// Actualizar cambio
+function actualizarCambio() {
+    const efectivo = parseFloat(document.getElementById('efectivo-recibido').value) || 0;
+    const total = parseFloat(document.getElementById('total-pago').textContent) || 0;
+    const cambio = Math.max(0, efectivo - total);
+    
+    document.getElementById('efectivo-pago').textContent = efectivo.toFixed(2);
+    document.getElementById('cambio-pago').textContent = cambio.toFixed(2);
+}
+
+// Buscar producto por código de barras
+function buscarPorCodigo() {
+    const codigo = document.getElementById('codigo-barras').value;
+    if (!codigo) return;
+    
+    fetch('/pos/buscar-producto', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `codigo=${encodeURIComponent(codigo)}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        const resultado = document.getElementById('resultado-busqueda');
+        
+        if (data.success) {
+            resultado.innerHTML = `
+                <div class="card">
+                    <div class="card-body">
+                        <h5>${data.producto.nombre}</h5>
+                        <p>Precio: $${data.producto.precio_venta.toFixed(2)}</p>
+                        <p>Stock: ${data.producto.stock}</p>
+                        <button class="btn btn-primary" onclick="agregarAlCarrito(${data.producto.id})">
+                            Agregar al carrito
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            // Limpiar campo de búsqueda
+            document.getElementById('codigo-barras').value = '';
+        } else {
+            resultado.innerHTML = `
+                <div class="alert alert-warning">
+                    ${data.message}
+                </div>
+            `;
+        }
+    });
+}
+
+// Agregar producto al carrito
+function agregarAlCarrito(productoId, cantidad = 1) {
+    fetch('/pos/agregar-carrito', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `producto_id=${productoId}&cantidad=${cantidad}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            carrito = data.carrito;
+            actualizarVistaCarrito();
+            
+            // Limpiar resultado de búsqueda
+            document.getElementById('resultado-busqueda').innerHTML = '';
+        } else {
+            alert(data.message);
+        }
+    });
+}
+
+// Cambiar cantidad de un item
+function cambiarCantidad(index, delta) {
+    carrito[index].cantidad += delta;
+    
+    if (carrito[index].cantidad < 1) {
+        carrito[index].cantidad = 1;
+    }
+    
+    carrito[index].subtotal = carrito[index].cantidad * carrito[index].precio;
+    actualizarVistaCarrito();
+    guardarCarrito();
+}
+
+// Actualizar cantidad desde input
+function actualizarCantidad(index, nuevaCantidad) {
+    const cantidad = parseInt(nuevaCantidad);
+    
+    if (isNaN(cantidad) || cantidad < 1) {
+        carrito[index].cantidad = 1;
+    } else {
+        carrito[index].cantidad = cantidad;
+    }
+    
+    carrito[index].subtotal = carrito[index].cantidad * carrito[index].precio;
+    actualizarVistaCarrito();
+    guardarCarrito();
+}
+
+// Eliminar item del carrito
+function eliminarItem(index) {
+    carrito.splice(index, 1);
+    actualizarVistaCarrito();
+    guardarCarrito();
+}
+
+// Guardar carrito en sesión
+function guardarCarrito() {
+    fetch('/pos/actualizar-carrito', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(carrito)
+    });
+}
+
+// Limpiar carrito
+function limpiarCarrito() {
+    if (confirm('¿Estás seguro de limpiar el carrito?')) {
+        fetch('/pos/limpiar-carrito', {
+            method: 'POST'
+        })
+        .then(() => {
+            carrito = [];
+            actualizarVistaCarrito();
+        });
+    }
+}
+
+// Procesar venta
+function procesarVenta() {
+    if (carrito.length === 0) {
+        alert('El carrito está vacío');
+        return;
+    }
+    
+    const clienteId = document.getElementById('cliente-select').value;
+    const efectivo = parseFloat(document.getElementById('efectivo-recibido').value) || 0;
+    const total = parseFloat(document.getElementById('total-pago').textContent);
+    
+    if (efectivo < total) {
+        alert('El efectivo recibido es menor al total');
+        return;
+    }
+    
+    fetch('/pos/procesar-venta', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `cliente_id=${clienteId}&efectivo=${efectivo}`
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Mostrar ticket
+            mostrarTicket(data);
+            
+            // Limpiar carrito
+            carrito = [];
+            actualizarVistaCarrito();
+            
+            // Limpiar formulario
+            document.getElementById('efectivo-recibido').value = '0';
+            document.getElementById('cliente-select').value = '';
+            actualizarCambio();
+        } else {
+            alert('Error: ' + data.message);
+        }
+    });
+}
+
+// Mostrar ticket
+function mostrarTicket(data) {
+    // Cargar contenido del ticket
+    fetch(`/pos/imprimir-ticket/${data.venta_id}`)
+    .then(response => response.text())
+    .then(html => {
+        document.getElementById('ticket-content').innerHTML = html;
+        const ticketModal = new bootstrap.Modal(document.getElementById('ticketModal'));
+        ticketModal.show();
+    });
+}
+
+// Imprimir ticket
+function imprimirTicket() {
+    const ventana = window.open('', '_blank');
+    ventana.document.write(`
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Ticket de venta</title>
+            <style>
+                body { font-family: Arial, sans-serif; font-size: 12px; }
+                .ticket { width: 80mm; margin: 0 auto; }
+                .center { text-align: center; }
+                .right { text-align: right; }
+                table { width: 100%; border-collapse: collapse; }
+                th, td { padding: 4px; border-bottom: 1px dashed #ccc; }
+                .total { font-weight: bold; }
+                hr { border-top: 1px dashed #000; }
+            </style>
+        </head>
+        <body onload="window.print()">
+            ${document.getElementById('ticket-content').innerHTML}
+        </body>
+        </html>
+    `);
+    ventana.document.close();
+}
+
+// Crear nuevo cliente
+function crearCliente() {
+    const form = document.getElementById('form-nuevo-cliente');
+    const formData = new FormData(form);
+    
+    fetch('/clientes/nuevo', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Agregar nuevo cliente al select
+            const select = document.getElementById('cliente-select');
+            const option = document.createElement('option');
+            option.value = data.cliente_id;
+            option.textContent = formData.get('nombre');
+            select.appendChild(option);
+            select.value = data.cliente_id;
+            
+            // Cerrar modal
+            bootstrap.Modal.getInstance(document.getElementById('nuevoClienteModal')).hide();
+            form.reset();
+            
+            alert('Cliente creado exitosamente');
+        } else {
+            alert('Error al crear cliente: ' + data.message);
+        }
+    });
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    actualizarVistaCarrito();
+    
+    // Escuchar cambios en el efectivo
+    document.getElementById('efectivo-recibido').addEventListener('input', actualizarCambio);
+    
+    // Escanear código de barras con Enter
+    document.getElementById('codigo-barras').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            buscarPorCodigo();
+        }
+    });
+});
+</script>
+{% endblock %}
